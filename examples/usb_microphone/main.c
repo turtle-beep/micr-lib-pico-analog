@@ -39,7 +39,8 @@ const struct analog_microphone_config config = {
 uint16_t sample_buffer[SAMPLE_BUFFER_SIZE];
 
 // callback functions
-void on_pdm_samples_ready();
+//void on_pdm_samples_ready();
+void on_analog_samples_ready();
 void on_usb_microphone_tx_ready();
 
 int main(void)
@@ -69,14 +70,24 @@ int main(void)
   return 0;
 }
 
-void on_pdm_samples_ready()
+//void on_pdm_samples_ready()
+//{
+  // Callback from library when all the samples in the library
+  // internal sample buffer are ready for reading.
+  //
+  // Read new samples into local buffer.
+  //pdm_microphone_read(sample_buffer, SAMPLE_BUFFER_SIZE);
+//}
+
+void on_analog_samples_ready()
 {
   // Callback from library when all the samples in the library
   // internal sample buffer are ready for reading.
   //
   // Read new samples into local buffer.
-  pdm_microphone_read(sample_buffer, SAMPLE_BUFFER_SIZE);
+  analog_microphone_read(sample_buffer, SAMPLE_BUFFER_SIZE);
 }
+
 
 void on_usb_microphone_tx_ready()
 {
