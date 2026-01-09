@@ -8,6 +8,9 @@
 #ifndef _PICO_ANALOG_MICROPHONE_H_
 #define _PICO_ANALOG_MICROPHONE_H_
 
+#include <stdint.h>
+#include <stddef.h>
+
 typedef void (*analog_samples_ready_handler_t)(void);
 
 struct analog_microphone_config {
@@ -16,6 +19,13 @@ struct analog_microphone_config {
     uint sample_rate;
     uint sample_buffer_size;
 };
+
+//struct analog_microphone_config {
+//    uint32_t gpio;
+//    float bias_voltage;
+//    uint32_t sample_rate;
+//    uint32_t sample_buffer_size;
+//};
 
 int analog_microphone_init(const struct analog_microphone_config* config);
 void analog_microphone_deinit();
