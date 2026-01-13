@@ -25,7 +25,7 @@
 
 #include "tusb.h"
 
-/* ========= Device Descriptor ========= */
+/* ================= Device ================= */
 
 tusb_desc_device_t const desc_device =
 {
@@ -50,47 +50,118 @@ uint8_t const* tud_descriptor_device_cb(void)
   return (uint8_t const*)&desc_device;
 }
 
-/* ========= Configuration ========= */
+/* ================= Configuration ================= */
 
-enum
-{
-  ITF_AUDIO_CONTROL = 0,
-  ITF_AUDIO_STREAMING,
-  ITF_TOTAL
-};
+#define ITF_AUDIO_CONTROL    0
+#define ITF_AUDIO_STREAMING  1
+#define ITF_TOTAL            2
 
-#define AUDIO_TOTAL_LEN ( \
-  TUD_CONFIG_DESC_LEN + \
-  TUD_AUDIO_CONTROL_DESC_LEN + \
-  TUD_AUDIO_STREAMING_DESC_LEN \
-)
+#define EP_AUDIO_IN          0x81
+
+#define CONFIG_TOTAL_LEN (9  /* config */ \
+  + 9   /* AC interface */ \
+  + 9   /* AC header */ \
+  + 12  /* Input terminal */ \
+  + 9   /* Output terminal */ \
+  + 9   /* AS interface alt 0 */ \
+  + 9   /* AS interface alt 1 */ \
+  + 7   /* AS general */ \
+  + 11  /* format type */ \
+  + 9   /* endpoint */ \
+  + 7)  /* endpoint CS */
 
 uint8_t const desc_configuration[] =
 {
   // Configuration
-  TUD_CONFIG_DESCRIPTOR(
-    1, ITF_TOTAL, 0,
-    AUDIO_TOTAL_LEN,
-    0x00, 100
-  ),
+  9, TUSB_DESC_CONFIGURATION,
+  1, ITF_TOTAL, 0,
+  CONFIG_TOTAL_LEN & 0xff,
+  CONFIG_TOTAL_LEN >> 8,
+  0x00, 100,
 
-  // Audio Control (UAC1)
-  TUD_AUDIO_CONTROL_DESCRIPTOR(
-    ITF_AUDIO_CONTROL,
-    0x01,     // string index
-    1         // number of streaming interfaces
-  ),
+  /* -------- Audio Control Interface -------- */
+  9, TUSB_DESC_INTERFACE,
+  ITF_AUDIO_CONTROL, 0, 0,
+  TUSB_CLASS_AUDIO,
+  AUDIO_SUBCLASS_CONTROL,
+  0x00, 0,
 
-  // Audio Streaming (Microphone)
-  TUD_AUDIO_STREAMING_DESCRIPTOR(
-    ITF_AUDIO_STREAMING,
-    0,
-    1,        // mono
-    16,       // bits
-    48000,
-    0x81,     // EP IN
-    CFG_TUD_AUDIO_EP_SZ_IN
-  )
+  // AC Header
+  9, AUDIO_CS_INTERFACE,
+  AUDIO_CS_AC_HEADER,
+  0x00, 0x01,   // UAC1
+  9, 0,
+  1, ITF_AUDIO_STREAMING,
+
+  // Input Terminal (Microphone)
+  12, AUDIO_CS_INTERFACE,
+  AUDIO_CS_AC_INPUT_TERMINAL,
+  0x01,
+  0x01, 0x02,   // Microphone
+  0x00,
+  1,
+  0x00, 0x00,
+  0x00, 0x00,
+
+  // Output Terminal (USB)
+  9, AUDIO_CS_INTERFACE,
+  AUDIO_CS_AC_OUTPUT_TERMINAL,
+  0x02,
+  0x01, 0x01,   // USB streaming
+  0x00,
+  0x01,
+  0x00,
+
+  /* -------- Audio Streaming Interface -------- */
+
+  // AS alt 0 (zero bandwidth)
+  9, TUSB_DESC_INTERFACE,
+  ITF_AUDIO_STREAMING, 0, 0,
+  TUSB_CLASS_AUDIO,
+  AUDIO_SUBCLASS_STREAMING,
+  0x00, 0,
+
+  // AS alt 1 (operational)
+  9, TUSB_DESC_INTERFACE,
+  ITF_AUDIO_STREAMING, 1, 1,
+  TUSB_CLASS_AUDIO,
+  AUDIO_SUBCLASS_STREAMING,
+  0x00, 0,
+
+  // AS General
+  7, AUDIO_CS_INTERFACE,
+  AUDIO_CS_AS_GENERAL,
+  0x01,
+  0x01,
+  0x01, 0x00,
+
+  // Format Type I
+  11, AUDIO_CS_INTERFACE,
+  AUDIO_CS_AS_FORMAT_TYPE,
+  AUDIO_FORMAT_TYPE_I,
+  1,
+  2,
+  16,
+  1,
+  0x80, 0xBB, 0x00,  // 48000 Hz
+
+  // ISO IN endpoint
+  9, TUSB_DESC_ENDPOINT,
+  EP_AUDIO_IN,
+  0x05,
+  CFG_TUD_AUDIO_EP_SZ_IN & 0xff,
+  CFG_TUD_AUDIO_EP_SZ_IN >> 8,
+  1,
+  0x00,
+  0x00,
+
+  // Endpoint CS
+  7, AUDIO_CS_ENDPOINT,
+  AUDIO_CS_EP_GENERAL,
+  0x00,
+  0x00,
+  0x00,
+  0x00
 };
 
 uint8_t const* tud_descriptor_configuration_cb(uint8_t index)
@@ -99,7 +170,7 @@ uint8_t const* tud_descriptor_configuration_cb(uint8_t index)
   return desc_configuration;
 }
 
-/* ========= Strings ========= */
+/* ================= Strings ================= */
 
 char const* string_desc_arr[] =
 {
