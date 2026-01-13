@@ -88,7 +88,8 @@ bool tud_audio_set_req_ep_cb(uint8_t rhport, tusb_control_request_t const * p_re
 
   (void) channelNum; (void) ctrlSel; (void) ep;
 
-  return false; 	// Yet not implemented
+  //return false; 	// Yet not implemented
+  return true;
 }
 
 // Invoked when audio class specific set request received for an interface
@@ -99,6 +100,14 @@ bool tud_audio_set_req_itf_cb(uint8_t rhport, tusb_control_request_t const * p_r
 
   // We do not support any set range requests here, only current value requests
   TU_VERIFY(p_request->bRequest == AUDIO_CS_REQ_CUR);
+
+  if (p_request->bRequest == AUDIO_CS_REQ_CUR)
+  {
+    return true;  // ✅ REQUIRED
+  }
+
+  return false;
+}
 
   // Page 91 in UAC2 specification
   uint8_t channelNum = TU_U16_LOW(p_request->wValue);
