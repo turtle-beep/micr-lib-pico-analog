@@ -26,22 +26,20 @@
 #ifndef _TUSB_CONFIG_H_
 #define _TUSB_CONFIG_H_
 
+#include "tusb_option.h"
+
+// RP2040
 #define CFG_TUSB_MCU          OPT_MCU_RP2040
 #define CFG_TUSB_OS           OPT_OS_NONE
-#define CFG_TUSB_DEBUG        0
 
 #define CFG_TUD_ENDPOINT0_SIZE 64
 
-// Enable AUDIO only
+// Enable AUDIO (UAC1)
 #define CFG_TUD_AUDIO         1
-#define CFG_TUD_CDC           0
-#define CFG_TUD_MSC           0
-#define CFG_TUD_HID           0
-#define CFG_TUD_MIDI          0
-#define CFG_TUD_VENDOR        0
+#define CFG_TUD_AUDIO_FUNC_1  1
 
-// UAC1 parameters
-#define CFG_TUD_AUDIO_FUNC_1_N_CHANNELS_TX 1
+// Mono, 16-bit
+#define CFG_TUD_AUDIO_FUNC_1_N_CHANNELS_TX       1
 #define CFG_TUD_AUDIO_FUNC_1_N_BYTES_PER_SAMPLE_TX 2
 
 // 48 samples/ms × 2 bytes
