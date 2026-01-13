@@ -110,14 +110,14 @@ bool tud_audio_set_req_itf_cb(uint8_t rhport, tusb_control_request_t const * p_r
 }
 
   // Page 91 in UAC2 specification
-  uint8_t channelNum = TU_U16_LOW(p_request->wValue);
-  uint8_t ctrlSel = TU_U16_HIGH(p_request->wValue);
-  uint8_t itf = TU_U16_LOW(p_request->wIndex);
+  //uint8_t channelNum = TU_U16_LOW(p_request->wValue);
+  //uint8_t ctrlSel = TU_U16_HIGH(p_request->wValue);
+  //uint8_t itf = TU_U16_LOW(p_request->wIndex);
 
-  (void) channelNum; (void) ctrlSel; (void) itf;
+  //(void) channelNum; (void) ctrlSel; (void) itf;
 
-  return false; 	// Yet not implemented
-}
+  //return false; 	// Yet not implemented
+//}
 
 // Invoked when audio class specific set request received for an entity
 bool tud_audio_set_req_entity_cb(uint8_t rhport, tusb_control_request_t const * p_request, uint8_t *pBuff)
