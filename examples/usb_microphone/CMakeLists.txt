@@ -15,4 +15,3 @@ target_link_libraries(usb_microphone PRIVATE tinyusb_device tinyusb_board pico_a
 
 # create map/bin/hex/uf2 file in addition to ELF.
 pico_add_extra_outputs(usb_microphone)
-
