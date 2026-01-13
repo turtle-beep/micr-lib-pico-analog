@@ -11,11 +11,13 @@
 #include "tusb.h"
 
 #ifndef SAMPLE_RATE
-#define SAMPLE_RATE ((CFG_TUD_AUDIO_EP_SZ_IN / 2) - 1) * 1000
+//#define SAMPLE_RATE ((CFG_TUD_AUDIO_EP_SZ_IN / 2) - 1) * 1000
+#define SAMPLE_RATE 48000
 #endif
 
 #ifndef SAMPLE_BUFFER_SIZE
 #define SAMPLE_BUFFER_SIZE ((CFG_TUD_AUDIO_EP_SZ_IN/2) - 1)
+#define SAMPLE_BUFFER_SIZE 48
 #endif
 
 typedef void (*usb_microphone_tx_ready_handler_t)(void);
