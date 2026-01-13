@@ -24,6 +24,7 @@
  */
 
 #include "usb_microphone.h"
+#include "tusb.h"
 
 void usb_microphone_init(void)
 {
@@ -32,14 +33,14 @@ void usb_microphone_init(void)
 
 void usb_microphone_task(void)
 {
-  tud_task();
+  tud_task();   // now defined
 }
 
 void usb_microphone_write(int16_t* samples)
 {
   if (tud_audio_ready())
   {
-    tud_audio_write((uint8_t*)samples,
-                    SAMPLES_PER_FRAME * sizeof(int16_t));
+    tud_audio_write(samples,
+      SAMPLES_PER_FRAME * sizeof(int16_t));
   }
 }
