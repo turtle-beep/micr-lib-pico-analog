@@ -135,6 +135,13 @@ bool tud_audio_set_req_entity_cb(uint8_t rhport, tusb_control_request_t const * 
   // We do not support any set range requests here, only current value requests
   TU_VERIFY(p_request->bRequest == AUDIO_CS_REQ_CUR);
 
+  if (entityID == 4 && ctrlSel == AUDIO_CS_CTRL_SAM_FREQ)
+  {
+    TU_VERIFY(p_request->wLength == sizeof(uint32_t));
+    sampFreq = *((uint32_t*) pBuff);
+    return true;
+  }
+
   // If request is for our feature unit
   if ( entityID == 2 )
   {
