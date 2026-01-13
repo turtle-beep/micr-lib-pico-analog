@@ -200,3 +200,4 @@ int analog_microphone_read(int16_t* buffer, size_t samples) {
 
     return samples;
 }
+
