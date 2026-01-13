@@ -329,7 +329,12 @@ bool tud_audio_tx_done_pre_load_cb(uint8_t rhport, uint8_t itf, uint8_t ep_in, u
     usb_microphone_tx_ready_handler();
   }
 
+  if (cur_alt_setting == 1 && usb_microphone_tx_ready_handler)
+  {
+    usb_microphone_tx_ready_handler();
+  }
   return true;
+}
 }
 
 bool tud_audio_tx_done_post_load_cb(uint8_t rhport, uint16_t n_bytes_copied, uint8_t itf, uint8_t ep_in, uint8_t cur_alt_setting)
