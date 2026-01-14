@@ -27,7 +27,7 @@ const struct analog_microphone_config config = {
 
 //const struct pdm_microphone_config config = {
 //  .gpio_data = 2,
-//  .gpio_clk = 3,
+//  .gpio_clk = 4,
 //  .pio = pio0,
 //  .pio_sm = 0,
 //  .sample_rate = SAMPLE_RATE,
@@ -96,3 +96,5 @@ void on_usb_microphone_tx_ready()
   // Write local buffer to the USB microphone
   usb_microphone_write(sample_buffer, sizeof(sample_buffer));
 }
+
+
