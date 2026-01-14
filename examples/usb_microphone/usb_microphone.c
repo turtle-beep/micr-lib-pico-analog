@@ -282,8 +282,9 @@ bool tud_audio_get_req_entity_cb(uint8_t rhport, tusb_control_request_t const * 
 	    TU_LOG2("    Get Sample Freq.\r\n");
 	    return tud_control_xfer(rhport, p_request, &sampFreq, sizeof(sampFreq));
 	  case AUDIO_CS_REQ_RANGE:
-	    TU_LOG2("    Get Sample Freq. range\r\n");
-	    return tud_control_xfer(rhport, p_request, &sampleFreqRng, sizeof(sampleFreqRng));
+	    //TU_LOG2("    Get Sample Freq. range\r\n");
+	    //return tud_control_xfer(rhport, p_request, &sampleFreqRng, sizeof(sampleFreqRng));
+		return False
 
 	    // Unknown/Unsupported control
 	  default: TU_BREAKPOINT(); return false;
