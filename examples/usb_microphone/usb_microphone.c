@@ -88,8 +88,7 @@ bool tud_audio_set_req_ep_cb(uint8_t rhport, tusb_control_request_t const * p_re
 
   (void) channelNum; (void) ctrlSel; (void) ep;
 
-  //return false; 	// Yet not implemented
-  return true;
+  return false; 	// Yet not implemented
 }
 
 // Invoked when audio class specific set request received for an interface
@@ -101,23 +100,15 @@ bool tud_audio_set_req_itf_cb(uint8_t rhport, tusb_control_request_t const * p_r
   // We do not support any set range requests here, only current value requests
   TU_VERIFY(p_request->bRequest == AUDIO_CS_REQ_CUR);
 
-  if (p_request->bRequest == AUDIO_CS_REQ_CUR)
-  {
-    return true;  // ✅ REQUIRED
-  }
-
-  return false;
-}
-
   // Page 91 in UAC2 specification
-  //uint8_t channelNum = TU_U16_LOW(p_request->wValue);
-  //uint8_t ctrlSel = TU_U16_HIGH(p_request->wValue);
-  //uint8_t itf = TU_U16_LOW(p_request->wIndex);
+  uint8_t channelNum = TU_U16_LOW(p_request->wValue);
+  uint8_t ctrlSel = TU_U16_HIGH(p_request->wValue);
+  uint8_t itf = TU_U16_LOW(p_request->wIndex);
 
-  //(void) channelNum; (void) ctrlSel; (void) itf;
+  (void) channelNum; (void) ctrlSel; (void) itf;
 
-  //return false; 	// Yet not implemented
-//}
+  return false; 	// Yet not implemented
+}
 
 // Invoked when audio class specific set request received for an entity
 bool tud_audio_set_req_entity_cb(uint8_t rhport, tusb_control_request_t const * p_request, uint8_t *pBuff)
@@ -134,13 +125,6 @@ bool tud_audio_set_req_entity_cb(uint8_t rhport, tusb_control_request_t const * 
 
   // We do not support any set range requests here, only current value requests
   TU_VERIFY(p_request->bRequest == AUDIO_CS_REQ_CUR);
-
-  if (entityID == 4 && ctrlSel == AUDIO_CS_CTRL_SAM_FREQ)
-  {
-    TU_VERIFY(p_request->wLength == sizeof(uint32_t));
-    sampFreq = *((uint32_t*) pBuff);
-    return true;
-  }
 
   // If request is for our feature unit
   if ( entityID == 2 )
@@ -326,18 +310,12 @@ bool tud_audio_tx_done_pre_load_cb(uint8_t rhport, uint8_t itf, uint8_t ep_in, u
   (void) ep_in;
   (void) cur_alt_setting;
 
-  //if (usb_microphone_tx_ready_handler)
-  //{
-    //usb_microphone_tx_ready_handler();
-  //}
+  if (usb_microphone_tx_ready_handler)
+  {
+    usb_microphone_tx_ready_handler();
+  }
 
-  //return true;
-//}
-  if (cur_alt_setting == 1 && usb_microphone_tx_ready_handler)
-    {
-      usb_microphone_tx_ready_handler();
-    }
-    return true;
+  return true;
 }
 
 bool tud_audio_tx_done_post_load_cb(uint8_t rhport, uint16_t n_bytes_copied, uint8_t itf, uint8_t ep_in, uint8_t cur_alt_setting)
