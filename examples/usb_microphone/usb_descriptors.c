@@ -158,7 +158,8 @@ uint8_t const desc_configuration[] =
     CFG_TUD_AUDIO_FUNC_1_N_BYTES_PER_SAMPLE_TX*8, // bSubFrameSize
     CFG_TUD_AUDIO_FUNC_1_N_BYTES_PER_SAMPLE_TX,   // bBitResolution
     0x01,           // bSamFreqType
-    0x80, 0x3E, 0x00, // tSamFreq[0] = 16kHz example (LSB first)
+    //0x80, 0x3E, 0x00, // tSamFreq[0] = 16kHz example (LSB first)
+    0x80, 0xBB, 0x00  // 48,000 Hz (LSB first)
 
     // Iso IN Endpoint
     TUD_AUDIO_DESC_STD_AS_ISO_EP(
