@@ -25,6 +25,15 @@
 
 #include "usb_microphone.h"
 
+typedef struct {
+  uint16_t wNumSubRanges;
+  struct {
+    uint32_t bMin;
+    uint32_t bMax;
+    uint32_t bRes;
+  } subrange[1];
+} __attribute__((packed)) audio_freq_range_t
+
 // Audio controls
 // Current states
 bool mute[CFG_TUD_AUDIO_FUNC_1_N_CHANNELS_TX + 1]; 						// +1 for master channel 0
@@ -272,36 +281,69 @@ bool tud_audio_get_req_entity_cb(uint8_t rhport, tusb_control_request_t const * 
   {
     switch (ctrlSel)
     {
-      case AUDIO_CS_CTRL_SAM_FREQ:
+
+	  case AUDIO_CS_CTRL_SAM_FREQ:
+      {
+        if (p_request->bRequest == AUDIO_CS_REQ_CUR)
+        {
+          uint32_t freq = 48000;
+          return tud_control_xfer(rhport, p_request,
+                                  &freq,
+                                  sizeof(freq));
+        }
+
+        if (p_request->bRequest == AUDIO_CS_REQ_RANGE)
+        {
+          static audio_freq_range_t range =
+          {
+            .wNumSubRanges = 1,
+            .subrange =
+            {
+              {
+                .bMin = 48000,
+                .bMax = 48000,
+                .bRes = 0,
+              }
+            }
+          };
+
+          return tud_control_xfer(rhport, p_request,
+                                  &range,
+                                  sizeof(range)); // 14 bytes
+          }
+        }
+        break;
+
+      //case AUDIO_CS_CTRL_SAM_FREQ:
 
 	// channelNum is always zero in this case
 
-	switch (p_request->bRequest)
-	{
-	  case AUDIO_CS_REQ_CUR:
-	    TU_LOG2("    Get Sample Freq.\r\n");
-	    return tud_control_xfer(rhport, p_request, &sampFreq, sizeof(sampFreq));
-	  case AUDIO_CS_REQ_RANGE:
-	    TU_LOG2("    Get Sample Freq. range\r\n");
-	    return tud_control_xfer(rhport, p_request, &sampleFreqRng, sizeof(sampleFreqRng));
+	//switch (p_request->bRequest)
+	//{
+	//  case AUDIO_CS_REQ_CUR:
+	//    TU_LOG2("    Get Sample Freq.\r\n");
+	//    return tud_control_xfer(rhport, p_request, &sampFreq, sizeof(sampFreq));
+	//  case AUDIO_CS_REQ_RANGE:
+	//    TU_LOG2("    Get Sample Freq. range\r\n");
+	//    return tud_control_xfer(rhport, p_request, &sampleFreqRng, sizeof(sampleFreqRng));
 
 	    // Unknown/Unsupported control
-	  default: TU_BREAKPOINT(); return false;
-	}
+	//  default: TU_BREAKPOINT(); return false;
+	//}
 
-	  case AUDIO_CS_CTRL_CLK_VALID:
+	 // case AUDIO_CS_CTRL_CLK_VALID:
 	    // Only cur attribute exists for this request
-	    TU_LOG2("    Get Sample Freq. valid\r\n");
-	    return tud_control_xfer(rhport, p_request, &clkValid, sizeof(clkValid));
+	  //  TU_LOG2("    Get Sample Freq. valid\r\n");
+	  //  return tud_control_xfer(rhport, p_request, &clkValid, sizeof(clkValid));
 
 	    // Unknown/Unsupported control
-	  default: TU_BREAKPOINT(); return false;
-    }
-  }
+	  //default: TU_BREAKPOINT(); return false;
+   // }
+ // }
 
-  TU_LOG2("  Unsupported entity: %d\r\n", entityID);
-  return false; 	// Yet not implemented
-}
+ // TU_LOG2("  Unsupported entity: %d\r\n", entityID);
+ // return false; 	// Yet not implemented
+//}
 
 bool tud_audio_tx_done_pre_load_cb(uint8_t rhport, uint8_t itf, uint8_t ep_in, uint8_t cur_alt_setting)
 {
