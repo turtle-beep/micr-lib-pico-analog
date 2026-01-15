@@ -43,30 +43,22 @@ tusb_desc_device_t const desc_device =
     .bLength            = sizeof(tusb_desc_device_t),
     .bDescriptorType    = TUSB_DESC_DEVICE,
     .bcdUSB             = 0x0200,
-
-    // Use Interface Association Descriptor (IAD) for CDC
-    // As required by USB Specs IAD's subclass must be common class (2) and protocol must be IAD (1)
     .bDeviceClass       = TUSB_CLASS_MISC,
     .bDeviceSubClass    = MISC_SUBCLASS_COMMON,
     .bDeviceProtocol    = MISC_PROTOCOL_IAD,
     .bMaxPacketSize0    = CFG_TUD_ENDPOINT0_SIZE,
-
     .idVendor           = 0xCafe,
     .idProduct          = USB_PID,
     .bcdDevice          = 0x0100,
-
     .iManufacturer      = 0x01,
     .iProduct           = 0x02,
     .iSerialNumber      = 0x03,
-
     .bNumConfigurations = 0x01
 };
 
-// Invoked when received GET DEVICE DESCRIPTOR
-// Application return pointer to descriptor
 uint8_t const * tud_descriptor_device_cb(void)
 {
-  return (uint8_t const *) &desc_device;
+    return (uint8_t const *)&desc_device;
 }
 
 //--------------------------------------------------------------------+
@@ -74,87 +66,152 @@ uint8_t const * tud_descriptor_device_cb(void)
 //--------------------------------------------------------------------+
 enum
 {
-  ITF_NUM_AUDIO_CONTROL = 0,
-  ITF_NUM_AUDIO_STREAMING,
-  ITF_NUM_TOTAL
+    ITF_NUM_AUDIO_CONTROL = 0,
+    ITF_NUM_AUDIO_STREAMING,
+    ITF_NUM_TOTAL
 };
 
-#define CONFIG_TOTAL_LEN    	(TUD_CONFIG_DESC_LEN + CFG_TUD_AUDIO * TUD_AUDIO_MIC_ONE_CH_DESC_LEN)
-
 #if CFG_TUSB_MCU == OPT_MCU_LPC175X_6X || CFG_TUSB_MCU == OPT_MCU_LPC177X_8X || CFG_TUSB_MCU == OPT_MCU_LPC40XX
-// LPC 17xx and 40xx endpoint type (bulk/interrupt/iso) are fixed by its number
-// 0 control, 1 In, 2 Bulk, 3 Iso, 4 In etc ...
 #define EPNUM_AUDIO   0x03
 #else
 #define EPNUM_AUDIO   0x01
 #endif
 
+#define CONFIG_TOTAL_LEN  (TUD_CONFIG_DESC_LEN + 109) // Update total length manually if needed
+
 uint8_t const desc_configuration[] =
 {
-    // Interface count, string index, total length, attribute, power in mA
+    // Configuration descriptor
     TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, 0x00, 100),
 
-    // Interface number, string index, EP Out & EP In address, EP size
-    TUD_AUDIO_MIC_ONE_CH_DESCRIPTOR(/*_itfnum*/ ITF_NUM_AUDIO_CONTROL, /*_stridx*/ 0, /*_nBytesPerSample*/ CFG_TUD_AUDIO_FUNC_1_N_BYTES_PER_SAMPLE_TX, /*_nBitsUsedPerSample*/ CFG_TUD_AUDIO_FUNC_1_N_BYTES_PER_SAMPLE_TX*8, /*_epin*/ 0x80 | EPNUM_AUDIO, /*_epsize*/ CFG_TUD_AUDIO_EP_SZ_IN)
+    // ---- Audio Control Interface ----
+    TUD_AUDIO_DESC_IAD(ITF_NUM_AUDIO_CONTROL, 2, 0x00),
+
+    // Standard AC Interface
+    TUD_AUDIO_DESC_STD_AC(ITF_NUM_AUDIO_CONTROL, 0, 0x00, 9),
+
+    // Clock Source descriptor (FIX: bControlSize = 4)
+    0x0A,           // bLength
+    0x24,           // bDescriptorType = CS_INTERFACE
+    0x0A,           // bDescriptorSubType = CLOCK_SOURCE
+    0x04,           // bClockID
+    0x01,           // bmAttributes (Internal Fixed Clock)
+    0x01,           // bmControls (Only CUR valid)
+    4,              // bControlSize = 4 (matches firmware)
+    0x00,           // bmFormats
+    0x00,           // bEndpoint
+    0x00,           // Reserved
+
+    // Input Terminal (Microphone)
+    0x0C,           // bLength
+    0x24,           // bDescriptorType
+    0x02,           // bDescriptorSubType = INPUT_TERMINAL
+    0x01,           // bTerminalID
+    0x01, 0x02,     // wTerminalType (Generic Microphone)
+    0x00,           // bAssocTerminal
+    0x04,           // bCSourceID (Clock Source)
+    0x01,           // bNrChannels
+    0x00, 0x00, 0x00,// bmChannelConfig
+    0x00,           // iChannelNames
+
+    // Feature Unit
+    0x07,           // bLength
+    0x24,           // bDescriptorType
+    0x06,           // bDescriptorSubType = FEATURE_UNIT
+    0x02,           // bUnitID
+    0x01,           // bSourceID (Input Terminal)
+    0x03, 0x00,     // bmaControls(0) Master Channel (Mute + Volume)
+    0x00,           // iFeature
+
+    // Output Terminal
+    0x09,           // bLength
+    0x24,           // bDescriptorType
+    0x03,           // bDescriptorSubType = OUTPUT_TERMINAL
+    0x03,           // bTerminalID
+    0x01, 0x01,     // wTerminalType (USB Streaming)
+    0x00,           // bAssocTerminal
+    0x02,           // bSourceID (Feature Unit)
+    0x00,           // iTerminal
+
+    // ---- Audio Streaming Interface ----
+    TUD_AUDIO_DESC_STD_AS_INT(ITF_NUM_AUDIO_STREAMING, 0, 0),
+    TUD_AUDIO_DESC_STD_AS_INT(ITF_NUM_AUDIO_STREAMING, 1, 0),
+
+    // AS General
+    0x07,           // bLength
+    0x24,           // bDescriptorType
+    0x01,           // bDescriptorSubType = AS_GENERAL
+    0x03,           // bTerminalLink (Output Terminal ID)
+    0x04,           // bCSourceID (Clock Source)
+    0x01,           // bmControls
+    0x00,           // bFormatType
+
+    // Format Type
+    0x0B,           // bLength
+    0x24,           // bDescriptorType
+    0x02,           // bDescriptorSubType = FORMAT_TYPE
+    0x01,           // bFormatType = FORMAT_TYPE_I
+    0x01,           // bNrChannels
+    CFG_TUD_AUDIO_FUNC_1_N_BYTES_PER_SAMPLE_TX*8, // bSubFrameSize
+    CFG_TUD_AUDIO_FUNC_1_N_BYTES_PER_SAMPLE_TX,   // bBitResolution
+    0x01,           // bSamFreqType
+    0x80, 0x3E, 0x00, // tSamFreq[0] = 16kHz example (LSB first)
+
+    // Iso IN Endpoint
+    TUD_AUDIO_DESC_STD_AS_ISO_EP(
+        0x80 | EPNUM_AUDIO,
+        TUSB_XFER_ISOCHRONOUS,
+        CFG_TUD_AUDIO_EP_SZ_IN,
+        1
+    ),
+
+    // Iso Endpoint CS
+    TUD_AUDIO_DESC_CS_AS_ISO_EP(
+        AUDIO_CS_AS_EP_ATTR_NO_PITCH_CTRL,
+        0,
+        0,
+        0
+    )
 };
 
-// Invoked when received GET CONFIGURATION DESCRIPTOR
-// Application return pointer to descriptor
-// Descriptor contents must exist long enough for transfer to complete
 uint8_t const * tud_descriptor_configuration_cb(uint8_t index)
 {
-  (void) index; // for multiple configurations
-  return desc_configuration;
+    (void) index;
+    return desc_configuration;
 }
 
 //--------------------------------------------------------------------+
 // String Descriptors
 //--------------------------------------------------------------------+
-
-// array of pointer to string descriptors
 char const* string_desc_arr [] =
 {
-    (const char[]) { 0x09, 0x04 }, 	// 0: is supported language is English (0x0409)
+    (const char[]) { 0x09, 0x04 }, 	// 0: English
     "PaniRCorp",                   	// 1: Manufacturer
     "MicNode",              		// 2: Product
-    "123456",                      	// 3: Serials, should use chip ID
+    "123456",                      	// 3: Serial
     "UAC2",                 	 	// 4: Audio Interface
 };
 
 static uint16_t _desc_str[32];
 
-// Invoked when received GET STRING DESCRIPTOR request
-// Application return pointer to descriptor, whose contents must exist long enough for transfer to complete
 uint16_t const* tud_descriptor_string_cb(uint8_t index, uint16_t langid)
 {
-  (void) langid;
+    (void) langid;
+    uint8_t chr_count;
 
-  uint8_t chr_count;
-
-  if ( index == 0)
-  {
-    memcpy(&_desc_str[1], string_desc_arr[0], 2);
-    chr_count = 1;
-  }else
-  {
-    // Convert ASCII string into UTF-16
-
-    if ( !(index < sizeof(string_desc_arr)/sizeof(string_desc_arr[0])) ) return NULL;
-
-    const char* str = string_desc_arr[index];
-
-    // Cap at max char
-    chr_count = strlen(str);
-    if ( chr_count > 31 ) chr_count = 31;
-
-    for(uint8_t i=0; i<chr_count; i++)
+    if (index == 0)
     {
-      _desc_str[1+i] = str[i];
+        memcpy(&_desc_str[1], string_desc_arr[0], 2);
+        chr_count = 1;
+    } else
+    {
+        if (!(index < sizeof(string_desc_arr)/sizeof(string_desc_arr[0]))) return NULL;
+        const char* str = string_desc_arr[index];
+        chr_count = strlen(str);
+        if (chr_count > 31) chr_count = 31;
+        for(uint8_t i=0;i<chr_count;i++) _desc_str[1+i] = str[i];
     }
-  }
 
-  // first byte is length (including header), second byte is string type
-  _desc_str[0] = (TUSB_DESC_STRING << 8 ) | (2*chr_count + 2);
-
-  return _desc_str;
+    _desc_str[0] = (TUSB_DESC_STRING << 8) | (2*chr_count + 2);
+    return _desc_str;
 }
