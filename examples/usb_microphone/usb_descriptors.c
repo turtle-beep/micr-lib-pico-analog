@@ -80,7 +80,8 @@ enum
 #define EPNUM_AUDIO   0x01
 #endif
 
-#define CONFIG_TOTAL_LEN  (TUD_CONFIG_DESC_LEN + 109) // Update total length manually if needed
+//#define CONFIG_TOTAL_LEN  (TUD_CONFIG_DESC_LEN + 109) // Update total length manually if needed
+#define CONFIG_TOTAL_LEN sizeof(desc_configuration)
 
 uint8_t const desc_configuration[] =
 {
