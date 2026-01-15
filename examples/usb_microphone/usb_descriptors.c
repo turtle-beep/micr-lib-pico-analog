@@ -24,7 +24,7 @@
  */
 
 #include "tusb.h"
-#include "class/audio/audio.h"
+#include "tusb.h/class/audio/audio.h"
 
 /* A combination of interfaces must have a unique product id, since PC will save device driver after the first plug.
  * Same VID/PID with different interface e.g MSC (first), then CDC (later) will possibly cause system error on PC.
