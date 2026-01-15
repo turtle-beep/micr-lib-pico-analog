@@ -35,7 +35,7 @@ const struct analog_microphone_config config = {
 //};
 
 // variables
-uint16_t sample_buffer[SAMPLE_BUFFER_SIZE];
+int16_t sample_buffer[SAMPLE_BUFFER_SIZE];
 
 // callback functions
 //void on_pdm_samples_ready();
