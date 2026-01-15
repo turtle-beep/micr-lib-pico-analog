@@ -24,6 +24,7 @@
  */
 
 #include "tusb.h"
+#include "class/audio/audio.h"
 
 /* A combination of interfaces must have a unique product id, since PC will save device driver after the first plug.
  * Same VID/PID with different interface e.g MSC (first), then CDC (later) will possibly cause system error on PC.
@@ -88,7 +89,7 @@ uint8_t const desc_configuration[] =
     TUD_AUDIO_DESC_IAD(ITF_NUM_AUDIO_CONTROL, 2, 0x00),
 
     // Standard AC Interface
-    TUD_AUDIO_DESC_STD_AC(ITF_NUM_AUDIO_CONTROL, 0, 0x00, 9),
+    TUD_AUDIO_DESC_STD_AC(ITF_NUM_AUDIO_CONTROL, 0, 0x00),
 
     // Clock Source descriptor (FIX: bControlSize = 4)
     0x0A,           // bLength
@@ -134,8 +135,8 @@ uint8_t const desc_configuration[] =
     0x00,           // iTerminal
 
     // ---- Audio Streaming Interface ----
-    TUD_AUDIO_DESC_STD_AS_INT(ITF_NUM_AUDIO_STREAMING, 0, 0),
-    TUD_AUDIO_DESC_STD_AS_INT(ITF_NUM_AUDIO_STREAMING, 1, 0),
+    TUD_AUDIO_DESC_STD_AS_INT(ITF_NUM_AUDIO_STREAMING, 0, 0,0),
+    TUD_AUDIO_DESC_STD_AS_INT(ITF_NUM_AUDIO_STREAMING, 1, 0,0),
 
     // AS General
     0x07,           // bLength
