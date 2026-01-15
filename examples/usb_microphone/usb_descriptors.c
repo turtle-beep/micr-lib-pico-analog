@@ -94,17 +94,15 @@ uint8_t const desc_configuration[] =
     // Standard AC Interface
     TUD_AUDIO_DESC_STD_AC(ITF_NUM_AUDIO_CONTROL, 0, 0x00),
 
-    // Clock Source descriptor (FIX: bControlSize = 4)
-    0x0A,           // bLength
-    0x24,           // bDescriptorType = CS_INTERFACE
-    0x0A,           // bDescriptorSubType = CLOCK_SOURCE
-    0x04,           // bClockID
-    0x01,           // bmAttributes (Internal Fixed Clock)
-    0x01,           // bmControls (Only CUR valid)
-    4,              // bControlSize = 4 (matches firmware)
-    0x00,           // bmFormats
-    0x00,           // bEndpoint
-    0x00,           // Reserved
+    // Clock Source Descriptor (UAC2 compliant)
+    0x08,       // bLength
+    0x24,       // bDescriptorType = CS_INTERFACE
+    0x0A,       // bDescriptorSubType = CLOCK_SOURCE
+    0x04,       // bClockID
+    0x01,       // bmAttributes (Internal Fixed Clock)
+    0x01,       // bmControls (CUR only)
+    0x00,       // bAssocTerminal
+    0x00,       // iClockSource
 
     // Input Terminal (Microphone)
     0x0C,           // bLength
